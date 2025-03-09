@@ -1,129 +1,90 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Багатомовний сайт</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Завантаження Excel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        button {
+            background-color: #0070C0;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #005a9e;
+        }
+        #error-container {
+            margin-top: 20px;
+            color: red;
+            font-size: 16px;
+            white-space: pre-wrap;
+            text-align: left;
+            display: inline-block;
+            max-width: 80%;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid red;
+        }
+    </style>
 </head>
 <body>
 
-<nav>
-    <div class="nav-left">
-        <div class="nav-buttons">
-			
-			<a href="#" id="btn-hlavni" onclick="changePage('hlavni')">Holovna</a>
-			<a href="#" id="btn-coDelam" onclick="changePage('coDelam')">Sco roblju</a>
-			<a href="#" id="btn-kontakt" onclick="changePage('kontakt')">Kontakt</a>
-			
-		</div>
-	</div>
-        
-	<div class="nav-right">
-		<a href="#" id="btn-lang-cs" onclick="changeLanguage('cs')">Cz</a>
-		<a href="#" id="btn-lang-uk" onclick="changeLanguage('uk')">Укр</a>
-	</div>
-    
-</nav>
+    <h2>Завантажити Excel зі стилями</h2>
+    <button onclick="createStyledExcel()">Завантажити Excel</button>
 
-	
-	<main>
-		<div id="description"></div>
-    </main>
+    <div id="error-container" style="display: none;"></div>
+
     <script>
-	
-const translations = {
-    uk: {
-        hlavni: { title: "Сторінка 1", description: "Вітаємо на першій сторінці!" },
-        coDelam: { title: "Сторінка 2", description: "Це друга сторінка." },
-        kontakt: { title: "Сторінка 3", description: "Ви на третій сторінці." },
-		kontaktH3: "mene znajdete:....",
-        buttons: {
-            hlavni: "Hilovna",
-            coDelam: "Sco roblju",
-            kontakt: "Kontakt",
-            langUk: "Укр",
-            langCs: "Cz"
-        }
-    },
-    cs: {
-        hlavni: { title: "Stránka 1", description: "Vítejte na první stránce!" },
-        coDelam: { title: "Stránka 2", description: "Toto je druhá stránka." },
-        kontakt: { title: "Stránka 3", description: "Jste na třetí stránce." },
-		kontaktH3: "Mne najdete za:....",
-        buttons: {
-            hlavni: "Hlavni",
-            coDelam: "Co delam",
-            kontakt: "Kontakt",
-            langUk: "Ukr",
-            langCs: "Cz"
+    async function createStyledExcel() {
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const sheet = workbook.addWorksheet("Лист1");
+
+            sheet.columns = [
+                { header: "Ім'я", key: "name", width: 20 },
+                { header: "Вік", key: "age", width: 10 },
+                { header: "Місто", key: "city", width: 15 }
+            ];
+
+            sheet.addRow({ name: "Олег", age: 25, city: "Київ" });
+            sheet.addRow({ name: "Анна", age: 30, city: "Львів" });
+
+            // Стилізуємо заголовки
+            const headerRow = sheet.getRow(1);
+            headerRow.font = { bold: true, color: { argb: "FFFFFF" } };
+            headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "0070C0" } };
+
+            // Генеруємо Excel-файл
+            const blob = await workbook.xlsx.writeBuffer();
+            const blobFile = new Blob([blob], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blobFile);
+            link.download = "styled.xlsx";
+            link.click();
+        } catch (error) {
+            showError(error);
         }
     }
-};
 
-function kontaktHtml(kontaktH3){
-	let cod = `<div class="kontakt">
-        <h3> ${kontaktH3} </h3><br>
-				
-		<div class="contact-info">
-        	<div class="contact-item">
-            	📞 <strong>Tel:</strong> <a href="tel:+420773878332">+420 773 878 332</a>
-        	</div>
-        	<div class="contact-item">
-            	✉️ <strong>Email:</strong> <a href="mailto:vlad.brynyak@gmail.com">vlad.brynyak@gmail.com</a>
-        	</div>
-        	<div class="contact-item">
-            	💬 <strong>WhatsApp:</strong> <a href="https://wa.me/420773878332">+420773878332</a>
-        	</div>
-    	</div>
-		</div>`;
-	return cod;
-}
+    function showError(error) {
+        const errorContainer = document.getElementById("error-container");
+        errorContainer.textContent = "Помилка: " + error.message;
+        errorContainer.style.display = "block";
+    }
+    </script>
 
-let jazyk = "uk";
-let stranka = "hlavni";
-
-function changePage(page) {
-    stranka = page;
-    updateNav();
-	updatePage()
-}
-
-function changeLanguage(lang) {
-    jazyk = lang;
-    updateNav();
-	updatePage()
-}
-
-function updateNav() {
-    const buttons = translations[jazyk].buttons;
-
-    // Оновлюємо кнопки навігації
-    document.getElementById("btn-hlavni").textContent = buttons.hlavni;
-    document.getElementById("btn-coDelam").textContent = buttons.coDelam;
-    document.getElementById("btn-kontakt").textContent = buttons.kontakt;
-
-    // Оновлюємо кнопки перемикання мови
-    document.getElementById("btn-lang-uk").textContent = buttons.langUk;
-    document.getElementById("btn-lang-cs").textContent = buttons.langCs;
-}
-
-function updatePage() {
-	let content = '';
-	
-	if (stranka == 'kontakt') {
-		content = kontaktHtml(translations[jazyk].kontaktH3);
-	} else {
-		content = translations[jazyk][stranka].description;
-	}
-
-    document.getElementById("description").innerHTML = content;
-
-}
-
-
-updatePage()
-
-	</script>
 </body>
 </html>
