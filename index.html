@@ -1,1 +1,44 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+<body>
+    
+
+<button onclick="createStyledExcel()">Завантажити Excel зі стилями</button>
+
+<script>
+async function createStyledExcel() {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Лист1");
+
+    sheet.columns = [
+        { header: "Ім'я", key: "name", width: 20 },
+        { header: "Вік", key: "age", width: 10 },
+        { header: "Місто", key: "city", width: 15 }
+    ];
+
+    sheet.addRow({ name: "Олег", age: 25, city: "Київ" });
+    sheet.addRow({ name: "Анна", age: 30, city: "Львів" });
+
+    // Стилізуємо заголовки
+    sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } };
+    sheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "0070C0" } };
+
+    // Завантажуємо файл
+    const blob = await workbook.xlsx.writeBuffer();
+    const blobFile = new Blob([blob], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blobFile);
+    link.download = "styled.xlsx";
+    link.click();
+}
+</script>
+
+
+</body>
+</html>
 
